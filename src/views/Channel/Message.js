@@ -6,7 +6,7 @@ export default function Message({
   text = "",
   displayName = "",
   photoURL = "",
-}) {
+}) {  
   return (
     <div>
       {photoURL ? (

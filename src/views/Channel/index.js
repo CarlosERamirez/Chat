@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
 import firebase from "firebase/compat/app";
 import Message from "./Message";
+import Div from "../../components/Div"
+import { useSelector } from "react-redux";
 
-export default function Channel({ user = null, db = null }) {
+const db = firebase.firestore();
+
+export default function Channel({ chat }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const { uid, displayName, photoURL } = user;
+  const { uid, displayName, photoURL, email } = useSelector(
+    (state) => state.firebase.auth
+  );
 
   useEffect(() => {
     if (db) {
@@ -19,12 +25,14 @@ export default function Channel({ user = null, db = null }) {
             id: doc.id,
           }));
 
-          setMessages(data);
+          const filtered = data.filter((doc) => chat.id === doc.chatId);
+
+          setMessages(filtered);
         });
 
       return unsubscribe;
     }
-  }, [db]);
+  }, [chat.id]);
 
   const handleOnChange = (e) => {
     setNewMessage(e.target.value);
@@ -39,15 +47,20 @@ export default function Channel({ user = null, db = null }) {
         uid,
         displayName,
         photoURL,
+        email,
+        chatId: chat.id
       });
     }
+    setNewMessage('')
   };
 
   return (
-    <>
+    <Div>
       <ul>
         {messages.map((msg) => (
-          <li key={msg.id}><Message {...msg} /></li>
+          <li key={msg.id}>
+            <Message {...msg} />
+          </li>
         ))}
       </ul>
       <form onSubmit={handleOnSubmit}>
@@ -61,6 +74,6 @@ export default function Channel({ user = null, db = null }) {
           Enviar
         </button>
       </form>
-    </>
+    </Div>
   );
 }
